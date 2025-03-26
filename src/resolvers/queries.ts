@@ -32,7 +32,6 @@ const queryResolvers: IResolvers = {
           },
         ]);
 
-        console.log(result);
         if (result.length === 0) {
           return null;
         }
@@ -90,7 +89,6 @@ const queryResolvers: IResolvers = {
       input: GetSalesAnalyticsArgs
     ): Promise<GetSalesAnalyticsOutput> => {
       const { startDate, endDate } = input;
-      console.log(startDate, endDate);
       const start = new Date(startDate).toISOString();
       const end = new Date(endDate).toISOString();
 

@@ -16,16 +16,11 @@ const mutationResolvers: IResolvers = {
       try {
         const { customerId, products } = input;
 
-        console.log(products);
-
         const productIds = products.map((p) => p.productId);
-        console.log({ productIds });
 
         const productDetails = await Product.find({
           _id: { $in: productIds },
         }).session(session);
-
-        console.log(productDetails);
 
         if (productDetails.length !== products.length) {
           const missingProductIds = products
