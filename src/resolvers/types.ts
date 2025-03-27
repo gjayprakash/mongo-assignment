@@ -91,3 +91,30 @@ export interface PlaceOrderInput {
   customerId: mongoose.Types.ObjectId;
   products: ProductOrderInput[];
 }
+
+export interface ProductDetails {
+  productId: string;
+  name: string;
+  category: string;
+  priceAtPurchase: number;
+  quantity: number;
+}
+
+export interface OrderDetails {
+  orderId: string;
+  totalAmount: number;
+  orderDate: Date;
+  status: string;
+  products: ProductDetails[];
+}
+
+export interface GetCustomerOrdersOutput {
+  orders: OrderDetails[];
+  pagination: Pagination;
+}
+
+export interface GetCustomerOrdersArgs {
+  customerId: string;
+  page?: number;
+  limit?: number;
+}

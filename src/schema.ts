@@ -5,6 +5,47 @@ const typeDefs = gql`
     hello: String
   }
 
+  type Query {
+    getCustomerSpending(customerId: ID!): CustomerSpending
+    getTopSellingProducts(limit: Int!): [TopProduct]
+    getSalesAnalytics(startDate: String!, endDate: String!): SalesAnalytics
+    getCustomers(
+      filter: CustomerFilterInput
+      page: Int
+      limit: Int
+      sortBy: String
+      sortOrder: String
+    ): CustomerQueryResult!
+    getCustomerOrders(input: GetCustomerOrdersArgs!): GetCustomerOrdersOutput!
+  }
+
+  input GetCustomerOrdersArgs {
+    customerId: ID!
+    page: Int
+    limit: Int
+  }
+
+  type GetCustomerOrdersOutput {
+    orders: [OrderDetails!]!
+    pagination: PaginationInfo!
+  }
+
+  type OrderDetails {
+    orderId: ID!
+    totalAmount: Float!
+    orderDate: String!
+    status: String!
+    products: [ProductDetails!]!
+  }
+
+  type ProductDetails {
+    productId: ID!
+    name: String!
+    category: String!
+    priceAtPurchase: Float!
+    quantity: Int!
+  }
+
   type CustomerSpending {
     customerId: ID!
     totalSpent: Float!
@@ -59,19 +100,6 @@ const typeDefs = gql`
   type CustomerQueryResult {
     customers: [Customer!]!
     pagination: PaginationInfo!
-  }
-
-  type Query {
-    getCustomerSpending(customerId: ID!): CustomerSpending
-    getTopSellingProducts(limit: Int!): [TopProduct]
-    getSalesAnalytics(startDate: String!, endDate: String!): SalesAnalytics
-    getCustomers(
-      filter: CustomerFilterInput
-      page: Int
-      limit: Int
-      sortBy: String
-      sortOrder: String
-    ): CustomerQueryResult!
   }
 
   type Mutation {

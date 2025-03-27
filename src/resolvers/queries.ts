@@ -10,7 +10,11 @@ import {
   GetSalesAnalyticsOutput,
   GetTopSellingProductOutput,
   GetTopSellingProductsArgs,
+  GetCustomerOrdersOutput,
+  GetCustomerOrdersArgs,
 } from "./types";
+import Product from "../models/Product";
+import { Types } from "mongoose";
 
 const queryResolvers: IResolvers = {
   Query: {
@@ -258,6 +262,82 @@ const queryResolvers: IResolvers = {
       } catch (error) {
         console.error("Error fetching customers:", error);
         throw new Error("Failed to fetch customers");
+      }
+    },
+
+    getCustomerOrders: async (
+      _,
+      { input }: { input: GetCustomerOrdersArgs }
+    ): Promise<GetCustomerOrdersOutput | null> => {
+      const { customerId, page = 1, limit = 10 } = input;
+
+      try {
+        const orders = await Order.aggregate([
+          {
+            $match: { customerId },
+          },
+          {
+            $unwind: "$products",
+          },
+          {
+            $lookup: {
+              from: "products",
+              localField: "products.productId",
+              foreignField: "_id",
+              as: "productDetails",
+            },
+          },
+          {
+            $unwind: "$productDetails",
+          },
+          {
+            $group: {
+              _id: "$_id",
+              customerId: { $first: "$customerId" },
+              totalAmount: { $first: "$totalAmount" },
+              orderDate: { $first: "$orderDate" },
+              status: { $first: "$status" },
+              products: {
+                $push: {
+                  productId: "$products.productId",
+                  category: "$productDetails.category",
+                  quantity: "$products.quantity",
+                  priceAtPurchase: "$products.priceAtPurchase",
+                  name: "$productDetails.name",
+                },
+              },
+            },
+          },
+          {
+            $sort: { orderDate: -1 },
+          },
+          {
+            $skip: (page - 1) * limit,
+          },
+          {
+            $limit: limit,
+          },
+        ]);
+
+        const totalOrders = await Order.countDocuments({
+          customerId,
+        });
+
+        return {
+          orders: orders.map((order) => ({
+            ...order,
+            orderId: order._id.toString(),
+          })),
+          pagination: {
+            total: totalOrders,
+            page,
+            limit,
+            totalPages: Math.ceil(totalOrders / limit),
+          },
+        };
+      } catch (error) {
+        console.error("Error fetching customer orders:", error);
+        throw new Error("Failed to fetch customer orders");
       }
     },
   },
