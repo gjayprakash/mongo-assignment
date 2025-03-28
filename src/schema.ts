@@ -47,7 +47,7 @@ const typeDefs = gql`
   }
 
   type CustomerSpending {
-    customerId: ID!
+    customerName: String
     totalSpent: Float!
     averageOrderValue: Float!
     lastOrderDate: String!

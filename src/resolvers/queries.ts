@@ -21,14 +21,25 @@ const queryResolvers: IResolvers = {
     getCustomerSpending: async (
       _,
       input: GetCustomerSpendingArgs
-    ): Promise<GetCustomerSpendingOutput[] | null> => {
+    ): Promise<GetCustomerSpendingOutput | null> => {
       try {
         const { customerId } = input;
+
         const result = await Order.aggregate([
           { $match: { customerId, status: "completed" } },
           {
+            $lookup: {
+              from: "customers",
+              localField: "customerId",
+              foreignField: "_id",
+              as: "customerDetails",
+            },
+          },
+          { $unwind: "$customerDetails" },
+          {
             $group: {
               _id: "$customerId",
+              customerName: { $first: "$customerDetails.name" },
               totalSpent: { $sum: "$totalAmount" },
               averageOrderValue: { $avg: "$totalAmount" },
               lastOrderDate: { $max: "$orderDate" },
@@ -36,13 +47,7 @@ const queryResolvers: IResolvers = {
           },
         ]);
 
-        if (result.length === 0) {
-          return null;
-        }
-
-        const spending = result.at(0);
-
-        return { ...spending, customerId: spending._id };
+        return result.length ? result[0] : null;
       } catch (error) {
         console.error("Error fetching customer spending:", error);
         throw new Error("Failed to fetch customer spending");

@@ -61,7 +61,7 @@ export interface Customer {
 }
 
 export interface GetCustomerSpendingOutput {
-  customerId: string;
+  customerName: string;
   totalSpent: number;
   averageOrderValue: number;
   lastOrderDate: string;
